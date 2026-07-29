@@ -33,7 +33,6 @@ Deploy a fullstack application using Huawei Cloud CCE (Cloud Container Engine) w
 
 ## Architecture
 
-![Infrastructure Architecture](./docs/infrastructure-architecture.png)
 
 **Infrastructure:**
 - VPC network (HA design, multi-AZ)
@@ -126,8 +125,8 @@ terraform init
 ### Step 3: Plan and Deploy
 
 ```bash
-terraform plan -var region="cn-north-4" -var environment_name="dev"
-terraform apply -var region="cn-north-4" -var environment_name="dev"
+terraform plan -var="region=cn-north-4" -var="environment_name=dev"
+terraform apply -var="region=cn-north-4" -var="environment_name=dev"
 ```
 
 ### Step 4: Configure kubectl
@@ -174,7 +173,7 @@ artillery run app/server/src/tests/stresstests/stress_server.yml
 
 ```bash
 cd deploy/terraform
-terraform destroy -var region="cn-north-4" -var environment_name="dev"
+terraform destroy -var="region=cn-north-4" -var="environment_name=dev"
 ```
 
 ---

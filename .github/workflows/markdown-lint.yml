@@ -10,6 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Lint Markdown
-        uses: actionshub/markdownlint@v3.1.1
+        uses: DavidAnson/markdownlint-cli2-action@v194
         with:
-          files_to_lint: '**/*.md'
+          globs: '**/*.md'

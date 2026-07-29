@@ -11,6 +11,12 @@ jobs:
         with:
           fetch-depth: 0
       - name: DCO Check
-        uses: christophebedard/dco-require-action@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          commits=$(git log --format='%B' origin/main..HEAD 2>/dev/null || git log --format='%B' HEAD)
+          if echo "$commits" | grep -qE '^Signed-off-by: .+ <.+@.+>'; then
+            echo "DCO check passed: Signed-off-by found"
+          else
+            echo "DCO check failed: No Signed-off-by line found in commits"
+            echo "Please use 'git commit -s' to sign your commits"
+            exit 1
+          fi

@@ -14,7 +14,7 @@ provider "huaweicloud" {
 }
 
 resource "huaweicloud_vpc_v1" "main" {
-  name = "${var.environment#name}-vpc"
+  name = "${var.environment_name}-vpc"
   cidr = "10.0.0.0/16"
 }
 
@@ -38,7 +38,7 @@ resource "huaweicloud_cce_cluster_v3" "main" {
   name                   = "${var.environment_name}-cce"
   flavor_id              = "cce.s1.small"
   vpc_id                 = huaweicloud_vpc_v1.main.id
-  subnet_id              = huaweicloud_vpc_subnet_v1.sub#ubnet_a.id
+  subnet_id              = huaweicloud_vpc_subnet_v1.subnet_a.id
   container_network_type = "overlay"
   container_network_cidr = "172.16.0.0/16"
   authentication_mode    = "rbac"
