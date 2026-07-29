@@ -55,6 +55,7 @@ resource "huaweicloud_cce_node_pool" "main" {
   initial_node_count = var.cce_node_count
   availability_zone  = "${var.region}a"
 
+  key_pair                 = var.key_pair
   scall_enable              = true
   min_node_count            = 1
   max_node_count            = 5
@@ -125,6 +126,11 @@ variable "cce_node_count" {
   description = "Number of CCE nodes"
   type        = number
   default     = 2
+}
+
+variable "key_pair" {
+  description = "SSH key pair name for CCE node login"
+  type        = string
 }
 
 variable "cce_node_flavor" {
