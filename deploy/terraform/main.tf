@@ -72,17 +72,27 @@ resource "huaweicloud_cce_node_pool" "main" {
 }
 
 resource "huaweicloud_elb_loadbalancer" "frontend" {
-  name           = "${var.environment_name}-elb-frontend"
-  vpc_id         = huaweicloud_vpc.main.id
-  type           = "External"
-  ipv4_subnet_id = huaweicloud_vpc_subnet.subnet_a.ipv4_subnet_id
+  name                  = "${var.environment_name}-elb-frontend"
+  vpc_id                = huaweicloud_vpc.main.id
+  ipv4_subnet_id        = huaweicloud_vpc_subnet.subnet_a.ipv4_subnet_id
+  availability_zone     = ["${var.region}a"]
+
+  iptype                = "5_bgp"
+  bandwidth_charge_mode = "traffic"
+  sharetype             = "PER"
+  bandwidth_size        = 5
 }
 
 resource "huaweicloud_elb_loadbalancer" "backend" {
-  name           = "${var.environment_name}-elb-backend"
-  vpc_id         = huaweicloud_vpc.main.id
-  type           = "External"
-  ipv4_subnet_id = huaweicloud_vpc_subnet.subnet_a.ipv4_subnet_id
+  name                  = "${var.environment_name}-elb-backend"
+  vpc_id                = huaweicloud_vpc.main.id
+  ipv4_subnet_id        = huaweicloud_vpc_subnet.subnet_a.ipv4_subnet_id
+  availability_zone     = ["${var.region}a"]
+
+  iptype                = "5_bgp"
+  bandwidth_charge_mode = "traffic"
+  sharetype             = "PER"
+  bandwidth_size        = 5
 }
 
 resource "huaweicloud_obs_bucket" "artifacts" {
@@ -120,7 +130,7 @@ variable "cce_node_count" {
 variable "cce_node_flavor" {
   description = "CCE node flavor"
   type        = string
-  default     = "s6.large.#2"
+  default     = "s6.large.2"
 }
 
 output "cluster_name" {
@@ -128,9 +138,9 @@ output "cluster_name" {
 }
 
 output "frontend_elb_address" {
-  value = huaweicloud_elb_loadbalancer.frontend
+  value = huaweicloud_elb_loadbalancer.frontend.ipv4_eip
 }
 
 output "application_url" {
-  value = "http://${huaweicloud_elb_loadbalancer.frontend.address}"
+  value = "http://${huaweicloud_elb_loadbalancer.frontend.ipv4_eip}"
 }
