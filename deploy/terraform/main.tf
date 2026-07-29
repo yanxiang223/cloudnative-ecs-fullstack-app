@@ -55,7 +55,7 @@ resource "huaweicloud_cce_node_pool" "main" {
   initial_node_count = var.cce_node_count
   availability_zone  = "${var.region}a"
 
-  scale_enable              = true
+  scall_enable              = true
   min_node_count            = 1
   max_node_count            = 5
   scale_down_cooldown_time  = 300
