@@ -13,48 +13,52 @@ provider "huaweicloud" {
   region = var.region
 }
 
-resource "huaweicloud_vpc_v1" "main" {
+resource "huaweicloud_vpc" "main" {
   name = "${var.environment_name}-vpc"
   cidr = "10.0.0.0/16"
 }
 
-resource "huaweicloud_vpc_subnet_v1" "subnet_a" {
-  name       = "${var.environment_name}-subnet-a"
-  vpc_id     = huaweicloud_vpc_v1.main.id
-  cidr       = "10.0.1.0/24"
-  gateway_ip = "10.0.1.1"
+resource "huaweicloud_vpc_subnet" "subnet_a" {
+  name              = "${var.environment_name}-subnet-a"
+  vpc_id            = huaweicloud_vpc.main.id
+  cidr              = "10.0.1.0/24"
+  gateway_ip        = "10.0.1.1"
   availability_zone = "${var.region}a"
+  primary_dns       = "100.125.1.250"
+  secondary_dns     = "100.125.21.250"
 }
 
-resource "huaweicloud_vpc_subnet_v1" "subnet_b" {
-  name       = "${var.environment_name}-subnet-b"
-  vpc_id     = huaweicloud_vpc_v1.main.id
-  cidr       = "10.0.2.0/24"
-  gateway_ip = "10.0.2.1"
+resource "huaweicloud_vpc_subnet" "subnet_b" {
+  name              = "${var.environment_name}-subnet-b"
+  vpc_id            = huaweicloud_vpc.main.id
+  cidr              = "10.0.2.0/24"
+  gateway_ip        = "10.0.2.1"
   availability_zone = "${var.region}b"
+  primary_dns       = "100.125.1.250"
+  secondary_dns     = "100.125.21.250"
 }
 
-resource "huaweicloud_cce_cluster_v3" "main" {
+resource "huaweicloud_cce_cluster" "main" {
   name                   = "${var.environment_name}-cce"
   flavor_id              = "cce.s1.small"
-  vpc_id                 = huaweicloud_vpc_v1.main.id
-  subnet_id              = huaweicloud_vpc_subnet_v1.subnet_a.id
-  container_network_type = "overlay"
+  vpc_id                 = huaweicloud_vpc.main.id
+  subnet_id              = huaweicloud_vpc_subnet.subnet_a.id
+  container_network_type = "overlay_l2"
   container_network_cidr = "172.16.0.0/16"
   authentication_mode    = "rbac"
 }
 
-resource "huaweicloud_cce_node_pool_v3" "main" {
-  cluster_id         = huaweicloud_cce_cluster_v3.main.id
+resource "huaweicloud_cce_node_pool" "main" {
+  cluster_id         = huaweicloud_cce_cluster.main.id
   name               = "${var.environment_name}-node-pool"
   flavor_id          = var.cce_node_flavor
   initial_node_count = var.cce_node_count
   availability_zone  = "${var.region}a"
 
-  scale_enable             = true
-  min_node_count          = 1
-  max_node_count          = 5
-  scale_down_cooldown_time = 300
+  scale_enable              = true
+  min_node_count            = 1
+  max_node_count            = 5
+  scale_down_cooldown_time  = 300
 
   root_volume {
     size       = 40
@@ -67,18 +71,18 @@ resource "huaweicloud_cce_node_pool_v3" "main" {
   }
 }
 
-resource "huaweicloud_elb_loadbalancer_v3" "frontend" {
-  name          = "${var.environment_name}-elb-frontend"
-  vpc_id        = huaweicloud_vpc_v1.main.id
-  type          = "External"
-  ipv4_subnet_id = huaweicloud_vpc_subnet_v1.subnet_a.id
+resource "huaweicloud_elb_loadbalancer" "frontend" {
+  name           = "${var.environment_name}-elb-frontend"
+  vpc_id         = huaweicloud_vpc.main.id
+  type           = "External"
+  ipv4_subnet_id = huaweicloud_vpc_subnet.subnet_a.ipv4_subnet_id
 }
 
-resource "huaweicloud_elb_loadbalancer_v3" "backend" {
-  name          = "${var.environment_name}-elb-backend"
-  vpc_id        = huaweicloud_vpc_v1.main.id
-  type          = "External"
-  ipv4_subnet_id = huaweicloud_vpc_subnet_v1.subnet_a.id
+resource "huaweicloud_elb_loadbalancer" "backend" {
+  name           = "${var.environment_name}-elb-backend"
+  vpc_id         = huaweicloud_vpc.main.id
+  type           = "External"
+  ipv4_subnet_id = huaweicloud_vpc_subnet.subnet_a.ipv4_subnet_id
 }
 
 resource "huaweicloud_obs_bucket" "artifacts" {
@@ -91,7 +95,7 @@ resource "huaweicloud_obs_bucket" "assets" {
   acl    = "public-read"
 }
 
-resource "huaweicloud_smn_topic_v2" "deploy_notification" {
+resource "huaweicloud_smn_topic" "deploy_notification" {
   name         = "${var.environment_name}-deploy-notify"
   display_name = "Deploy notification for ${var.environment_name}"
 }
@@ -116,17 +120,17 @@ variable "cce_node_count" {
 variable "cce_node_flavor" {
   description = "CCE node flavor"
   type        = string
-  default     = "s6.large.2"
+  default     = "s6.large.#2"
 }
 
 output "cluster_name" {
-  value = huaweicloud_cce_cluster_v3.main.name
+  value = huaweicloud_cce_cluster.main.name
 }
 
 output "frontend_elb_address" {
-  value = huaweicloud_elb_loadbalancer_v3.frontend
+  value = huaweicloud_elb_loadbalancer.frontend
 }
 
 output "application_url" {
-  value = "http://${huaweicloud_elb_loadbalancer_v3.frontend.address}"
+  value = "http://${huaweicloud_elb_loadbalancer.frontend.address}"
 }
